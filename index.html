@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Votazioni RLS Sicis</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #ffffff;
+      --secondary: #121212;
+      --bg: #121212;
+      --card-bg: #1e1e1e;
+      --text: #e0e0e0;
+      --shadow: rgba(0, 0, 0, 0.5);
+      --radius: 16px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body, html {
+      height: 100%;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .screen {
+      display: none;
+      width: 100%;
+      max-width: 360px;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      box-shadow: 0 4px 16px var(--shadow);
+      text-align: center;
+      padding: 40px 20px;
+      margin: 20px;
+    }
+    .active { display: block; }
+    .logo {
+      width: 120px;
+      margin: 0 auto 20px;
+      filter: brightness(0) invert(1);
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+      font-weight: 600;
+      color: var(--primary);
+    }
+    p {
+      font-size: 1rem;
+      margin-bottom: 20px;
+      color: var(--text);
+    }
+    button {
+      background: var(--primary);
+      color: var(--secondary);
+      border: none;
+      border-radius: var(--radius);
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 8px var(--shadow);
+      transition: transform 0.1s ease, box-shadow 0.1s ease;
+      width: 100%;
+      max-width: 240px;
+      margin: 0 auto;
+    }
+    button:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px var(--shadow);
+    }
+    button:disabled {
+      background: #555;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    .candidates {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .candidateBtn {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 2px solid var(--text);
+    }
+    .candidateBtn.selected {
+      background: var(--primary);
+      color: var(--secondary);
+      border-color: var(--primary);
+    }
+    .results p {
+      font-size: 1rem;
+      margin: 8px 0;
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+  <div id="welcomeScreen" class="screen active">
+    <img src="logo.png" alt="Logo Sicis" class="logo">
+    <h1>Benvenuto!</h1>
+    <p>Stai partecipando alle votazioni per RLS per conto di Sicis.</p>
+    <button id="startVoteBtn">Voglio votare</button>
+  </div>
+
+  <div id="voteScreen" class="screen">
+    <h1>Chi vuoi votare?</h1>
+    <div class="candidates">
+      <button class="candidateBtn" data-name="Candidato A">Candidato A</button>
+      <button class="candidateBtn" data-name="Candidato B">Candidato B</button>
+    </div>
+    <button id="submitVoteBtn" disabled>Invia il voto</button>
+  </div>
+
+  <div id="resultScreen" class="screen">
+    <h1>Grazie di aver votato!</h1>
+    <p>Ecco come sta procedendo la votazione:</p>
+    <div class="results">
+      <p id="votesCount">Voti totali: 0</p>
+      <p id="leading">In testa: -</p>
+    </div>
+  </div>
+
+  <script>
+    // Controllo voto precedente
+    if (localStorage.getItem('hasVoted') === 'true') {
+      const savedResults = JSON.parse(localStorage.getItem('results'));
+      if (savedResults) {
+        Object.assign(votes, savedResults.votes);
+        updateResults();
+      }
+      document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('resultScreen').classList.add('active');
+    }
+
+    // Stato voti e variabili
+    const votes = { 'Candidato A': 0, 'Candidato B': 0 };
+    let selectedCandidate = null;
+
+    const welcomeScreen = document.getElementById('welcomeScreen');
+    const voteScreen = document.getElementById('voteScreen');
+    const resultScreen = document.getElementById('resultScreen');
+    const startVoteBtn = document.getElementById('startVoteBtn');
+    const candidateButtons = document.querySelectorAll('.candidateBtn');
+    const submitVoteBtn = document.getElementById('submitVoteBtn');
+    const votesCountEl = document.getElementById('votesCount');
+    const leadingEl = document.getElementById('leading');
+
+    // Passa alla votazione
+    startVoteBtn.addEventListener('click', () => {
+      welcomeScreen.classList.remove('active');
+      voteScreen.classList.add('active');
+    });
+
+    // Seleziona candidato
+    candidateButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        candidateButtons.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedCandidate = btn.getAttribute('data-name');
+        submitVoteBtn.disabled = false;
+      });
+    });
+
+    // Invia voto
+    submitVoteBtn.addEventListener('click', () => {
+      if (!selectedCandidate) return;
+      votes[selectedCandidate]++;
+      localStorage.setItem('hasVoted', 'true');
+      localStorage.setItem('results', JSON.stringify({ votes }));
+      voteScreen.classList.remove('active');
+      updateResults();
+      resultScreen.classList.add('active');
+    });
+
+    // Aggiorna i risultati
+    function updateResults() {
+      const total = votes['Candidato A'] + votes['Candidato B'];
+      votesCountEl.textContent = `Voti totali: ${total}`;
+      const leader = votes['Candidato A'] > votes['Candidato B']
+        ? 'Candidato A' : votes['Candidato B'] > votes['Candidato A']
+        ? 'Candidato B' : 'Pari';
+      leadingEl.textContent = `In testa: ${leader}`;
+    }
+  </script>
+</body>
+</html>
