@@ -6,106 +6,29 @@
   <title>Votazioni RLS Sicis</title>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet" />
   <style>
-    :root {
-      --primary: #ffffff;
-      --secondary: #121212;
-      --bg: #121212;
-      --card-bg: #1e1e1e;
-      --text: #e0e0e0;
-      --shadow: rgba(0, 0, 0, 0.5);
-      --radius: 16px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body, html {
-      height: 100%;
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .screen {
-      display: none;
-      width: 100%;
-      max-width: 360px;
-      background: var(--card-bg);
-      border-radius: var(--radius);
-      box-shadow: 0 4px 16px var(--shadow);
-      text-align: center;
-      padding: 40px 20px;
-      margin: 20px;
-    }
-    .active { display: block; }
-    .logo {
-      width: 120px;
-      margin: 0 auto 20px;
-      filter: brightness(0) invert(1);
-    }
-    h1 {
-      font-size: 1.5rem;
-      margin-bottom: 10px;
-      font-weight: 600;
-      color: var(--primary);
-    }
-    p {
-      font-size: 1rem;
-      margin-bottom: 20px;
-      color: var(--text);
-    }
-    button {
-      background: var(--primary);
-      color: var(--secondary);
-      border: none;
-      border-radius: var(--radius);
-      padding: 12px 24px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      box-shadow: 0 4px 8px var(--shadow);
-      transition: transform 0.1s ease, box-shadow 0.1s ease;
-      width: 100%;
-      max-width: 240px;
-      margin: 0 auto;
-    }
-    button:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 12px var(--shadow);
-    }
-    button:disabled {
-      background: #555;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-    .candidates {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      align-items: center;
-      margin-bottom: 20px;
-    }
-    .candidateBtn {
-      background: var(--card-bg);
-      color: var(--text);
-      border: 2px solid var(--text);
-    }
-    .candidateBtn.selected {
-      background: var(--primary);
-      color: var(--secondary);
-      border-color: var(--primary);
-    }
-    .results p {
-      font-size: 1rem;
-      margin: 8px 0;
-      color: var(--text);
-    }
+    :root { --primary:#fff;--secondary:#121212;--bg:#121212;--card-bg:#1e1e1e;--text:#e0e0e0;--shadow:rgba(0,0,0,0.5);--radius:16px; }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body,html{height:100%;font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);display:flex;align-items:center;justify-content:center}
+    .screen{display:none;width:100%;max-width:360px;background:var(--card-bg);border-radius:var(--radius);box-shadow:0 4px 16px var(--shadow);text-align:center;padding:40px 20px;margin:20px}
+    .active{display:block}
+    .logo{width:120px;margin:0 auto 20px;}
+    h1{font-size:1.5rem;margin-bottom:10px;font-weight:600;color:var(--primary)}
+    p{font-size:1rem;margin-bottom:20px;color:var(--text)}
+    input{width:100%;max-width:240px;padding:12px;margin-bottom:20px;border-radius:var(--radius);border:none;font-size:1rem}
+    button{background:var(--primary);color:var(--secondary);border:none;border-radius:var(--radius);padding:12px 24px;font-size:1rem;font-weight:600;cursor:pointer;box-shadow:0 4px 8px var(--shadow);transition:transform .1s,box-shadow .1s;width:100%;max-width:240px;margin:0 auto}
+    button:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 12px var(--shadow)}
+    button:disabled{background:#555;cursor:not-allowed;box-shadow:none}
+    .candidates{display:flex;flex-direction:column;gap:12px;align-items:center;margin-bottom:20px}
+    .candidateBtn{background:var(--card-bg);color:var(--text);border:2px solid var(--text);border-radius:var(--radius);padding:12px;width:100%;max-width:240px;text-align:left}
+    .candidateBtn.selected{background:var(--primary);color:var(--secondary);border-color:var(--primary)}
+    .results p{font-size:1rem;margin:8px 0;color:var(--text)}
+    /* Intro modal */
+    #introModal{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);color:var(--text);display:flex;align-items:center;justify-content:center;z-index:1000}
+    #introContent{background:var(--card-bg);padding:20px;border-radius:var(--radius);max-width:320px;text-align:left;}
   </style>
-
-  <!-- Firebase SDK compat -->
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
   <script>
-    // Configurazione Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyCE0TNZDQDvjBBxbB2W1rKaT_6RYg-pw4g",
       authDomain: "votazionisicis.firebaseapp.com",
@@ -116,13 +39,51 @@
       appId: "1:109175816237:web:fb50d00768ddcfa696f8a4",
       measurementId: "G-3LB8P91GCZ"
     };
-    // Inizializza Firebase
     firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    async function fetchGlobalVotes() {
+      const snap = await db.ref('votes').get();
+      const data = snap.exists() ? snap.val() : {};
+      return {
+        'Cristina Antonelli': data['Cristina Antonelli'] || 0,
+        'Cristina Pol': data['Cristina Pol'] || 0,
+        'Mi astengo': data['Mi astengo'] || 0
+      };
+    }
+    async function sendVote(candidate) {
+      const ref = db.ref(`votes/${candidate}`);
+      await ref.transaction(curr => (curr || 0) + 1);
+    }
+    async function resetVotes() {
+      await db.ref('votes').set({
+        'Cristina Antonelli': 0,
+        'Cristina Pol': 0,
+        'Mi astengo': 0
+      });
+    }
   </script>
 </head>
 <body>
-  <div id="welcomeScreen" class="screen active">
-    <img src="logo.png" alt="Logo Sicis" class="logo" />
+  <!-- Intro Modal -->
+  <div id="introModal">
+    <div id="introContent">
+      <p>È arrivato il momento di esprimere il vostro voto per la nomina del Rappresentante dei Lavoratori per la Sicurezza (RLS) della nostra azienda, Sicis.</p>
+      <p>Il RLS è una figura fondamentale per la tutela della salute e della sicurezza nei luoghi di lavoro. Viene eletto direttamente da voi lavoratori e ha il compito di rappresentarvi su tutte le tematiche legate alla prevenzione dei rischi e al benessere lavorativo.</p>
+      <p>Inserendo il vostro numero di badge accederete al sistema di voto. Ogni dipendente ha diritto a un solo voto e potrà scegliere tra i candidati proposti. La partecipazione attiva di tutti è importante per garantire un ambiente di lavoro sempre più sicuro e consapevole.</p>
+      <p>Grazie per la vostra collaborazione.</p>
+      <button id="introBtn">Ho capito</button>
+    </div>
+  </div>
+
+  <div id="loginScreen" class="screen">
+    <img src="https://i.imgur.com/cspn2wn.png" alt="Logo Sicis" class="logo" />
+    <h1>Login</h1>
+    <input type="text" id="badgeInput" placeholder="Inserisci numero badge" />
+    <button id="loginBtn" disabled>Accedi</button>
+  </div>
+
+  <div id="welcomeScreen" class="screen">
+    <img src="https://i.imgur.com/cspn2wn.png" alt="Logo Sicis" class="logo" />
     <h1>Benvenuto!</h1>
     <p>Stai partecipando alle votazioni per RLS per conto di Sicis.</p>
     <button id="startVoteBtn">Voglio votare</button>
@@ -131,53 +92,83 @@
   <div id="voteScreen" class="screen">
     <h1>Chi vuoi votare?</h1>
     <div class="candidates">
-      <button class="candidateBtn" data-name="Candidato A">Candidato A</button>
-      <button class="candidateBtn" data-name="Candidato B">Candidato B</button>
+      <button class="candidateBtn" data-name="Cristina Antonelli">Cristina Antonelli</button>
+      <button class="candidateBtn" data-name="Cristina Pol">Cristina Pol</button>
+      <button class="candidateBtn" data-name="Mi astengo">Mi astengo</button>
     </div>
     <button id="submitVoteBtn" disabled>Invia il voto</button>
   </div>
 
   <div id="resultScreen" class="screen">
+    <img src="https://i.imgur.com/cspn2wn.png" alt="Logo Sicis" class="logo" />
     <h1>Grazie di aver votato!</h1>
     <p>Ecco come sta procedendo la votazione:</p>
     <div class="results">
       <p id="votesCount">Voti totali: 0</p>
       <p id="leading">In testa: -</p>
     </div>
+    <button id="backLoginBtn">Torna al login</button>
+    <button id="resetVotesBtn" style="display:none;">Reset voti</button>
   </div>
 
   <script>
-    // Elementi DOM e stato
-    const welcomeScreen    = document.getElementById('welcomeScreen');
-    const voteScreen       = document.getElementById('voteScreen');
-    const resultScreen     = document.getElementById('resultScreen');
-    const startVoteBtn     = document.getElementById('startVoteBtn');
-    const candidateButtons = document.querySelectorAll('.candidateBtn');
-    const submitVoteBtn    = document.getElementById('submitVoteBtn');
-    const votesCountEl     = document.getElementById('votesCount');
-    const leadingEl        = document.getElementById('leading');
-    let selectedCandidate  = null;
+    const introModal = document.getElementById('introModal'),
+          introBtn = document.getElementById('introBtn');
+    const loginScreen = document.getElementById('loginScreen'),
+          welcomeScreen = document.getElementById('welcomeScreen'),
+          voteScreen = document.getElementById('voteScreen'),
+          resultScreen = document.getElementById('resultScreen');
+    const badgeInput = document.getElementById('badgeInput'),
+          loginBtn = document.getElementById('loginBtn');
+    const startVoteBtn = document.getElementById('startVoteBtn'),
+          submitVoteBtn = document.getElementById('submitVoteBtn');
+    const backLoginBtn = document.getElementById('backLoginBtn'),
+          resetVotesBtn = document.getElementById('resetVotesBtn');
+    const candidateButtons = document.querySelectorAll('.candidateBtn'),
+          votesCountEl = document.getElementById('votesCount'),
+          leadingEl = document.getElementById('leading');
 
-    // Funzioni DB
-    const db = firebase.database();
-    async function fetchGlobalVotes() {
-      const snap = await db.ref('votes').get();
-      return snap.exists()
-        ? snap.val()
-        : { 'Candidato A': 0, 'Candidato B': 0 };
-    }
-    async function sendVote(candidate) {
-      const ref = db.ref(`votes/${candidate}`);
-      await ref.transaction(current => (current || 0) + 1);
-    }
+    let currentBadge = null, 
+        isAdmin = false, 
+        selectedCandidate = null;
+    const allowedBadges = ['6075','5010','5011','5012','5013','5014'],
+          adminCode = '0544469701';
 
-    // Click su "Voglio votare"
+    // Intro modal
+    introBtn.addEventListener('click', () => {
+      introModal.style.display = 'none';
+      loginScreen.classList.add('active');
+    });
+
+    // Enable login button
+    badgeInput.addEventListener('input', () => {
+      const val = badgeInput.value.trim();
+      loginBtn.disabled = !(allowedBadges.includes(val) || val === adminCode);
+    });
+
+    // Handle login
+    loginBtn.addEventListener('click', () => {
+      currentBadge = badgeInput.value.trim();
+      isAdmin = currentBadge === adminCode;
+      const votedBadges = JSON.parse(localStorage.getItem('votedBadges') || '[]');
+      loginScreen.classList.remove('active');
+
+      if (isAdmin) {
+        showResults();
+      } else if (votedBadges.includes(currentBadge)) {
+        showResults();
+      } else {
+        welcomeScreen.classList.add('active');
+      }
+    });
+
+    // Navigate to vote screen
     startVoteBtn.addEventListener('click', () => {
       welcomeScreen.classList.remove('active');
       voteScreen.classList.add('active');
     });
 
-    // Selezione candidato
+    // Candidate selection
     candidateButtons.forEach(btn => {
       btn.addEventListener('click', () => {
         candidateButtons.forEach(b => b.classList.remove('selected'));
@@ -187,36 +178,44 @@
       });
     });
 
-    // Al caricamento della pagina
-    document.addEventListener('DOMContentLoaded', async () => {
-      const hasVoted = localStorage.getItem('hasVoted') === 'true';
-      // Leggi voti globali
-      const globalVotes = await fetchGlobalVotes();
-      const total = globalVotes['Candidato A'] + globalVotes['Candidato B'];
-      votesCountEl.textContent = `Voti totali: ${total}`;
-      const leader = globalVotes['Candidato A'] > globalVotes['Candidato B']
-        ? 'Candidato A'
-        : globalVotes['Candidato B'] > globalVotes['Candidato A']
-        ? 'Candidato B'
-        : 'Pari';
-      leadingEl.textContent = `In testa: ${leader}`;
-
-      // Se già votato, mostra i risultati
-      if (hasVoted) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        return resultScreen.classList.add('active');
-      }
-      // Altrimenti mostra la welcome
-      welcomeScreen.classList.add('active');
-    });
-
-    // Invia il voto
+    // Submit vote
     submitVoteBtn.addEventListener('click', async () => {
       if (!selectedCandidate) return;
       await sendVote(selectedCandidate);
-      localStorage.setItem('hasVoted', 'true');
-      location.reload();
+      const votedBadges = JSON.parse(localStorage.getItem('votedBadges') || '[]');
+      votedBadges.push(currentBadge);
+      localStorage.setItem('votedBadges', JSON.stringify(votedBadges));
+      voteScreen.classList.remove('active');
+      showResults();
     });
+
+    // Back to login
+    backLoginBtn.addEventListener('click', () => {
+      resultScreen.classList.remove('active');
+      badgeInput.value = '';
+      loginBtn.disabled = true;
+      loginScreen.classList.add('active');
+    });
+
+    // Reset votes (admin only)
+    resetVotesBtn.addEventListener('click', async () => {
+      await resetVotes();
+      localStorage.removeItem('votedBadges');
+      showResults();
+    });
+
+    // Show results
+    async function showResults() {
+      resetVotesBtn.style.display = isAdmin ? 'block' : 'none';
+      const globalVotes = await fetchGlobalVotes();
+      const total = globalVotes['Cristina Antonelli'] + globalVotes['Cristina Pol'] + globalVotes['Mi astengo'];
+      votesCountEl.textContent = `Voti totali: ${total}`;
+      let leader = '';
+      if (total === 0) leader = '-';
+      else leader = Object.entries(globalVotes).reduce((a, b) => b[1] > a[1] ? b : a)[0];
+      leadingEl.textContent = `In testa: ${leader}`;
+      resultScreen.classList.add('active');
+    }
   </script>
 </body>
 </html>
